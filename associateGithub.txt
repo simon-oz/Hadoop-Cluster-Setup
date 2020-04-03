@@ -1,0 +1,42 @@
+Associate local with github
+
+1. Create a new github project with name Hadoop-Cluster-Setup from
+https//github.com/simon-oz
+
+2. create a new folder ~workspace/hadoopsetup
+
+3. open a terminal and change to that folder
+$ cp ~/Documents/installHBase.txt .
+
+$ git init
+
+# change email to d.zhu
+$ git config  --global  user.email d.zhu
+
+$ git add .
+$ git commit -m "install hbase on hadoop cluster"
+
+# associate origin with github
+$ git remote add origin https://github.com/simon-oz/Hadoop-Cluster-Setup.git
+
+This may require you provide username and password of github user. provided.
+if there are errors, may need to do following
+
+$ git pull https://github.com/simon-oz/Hadoop-Cluster-Setup.git --allow-unrelated-histories
+
+$ git push --set-upstream origin master
+hdpusr@slave1:~/workspace/hadoopsetup$ git push --set-upstream origin master
+Username for 'https://github.com': simon-oz
+Password for 'https://simon-oz@github.com': 
+Counting objects: 8, done.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (8/8), 2.48 KiB | 2.48 MiB/s, done.
+Total 8 (delta 1), reused 0 (delta 0)
+remote: Resolving deltas: 100% (1/1), done.
+To https://github.com/simon-oz/Hadoop-Cluster-Setup.git
+   5394b8b..5c0dd30  master -> master
+Branch 'master' set up to track remote branch 'master' from 'origin' by rebasing.
+
+
+
