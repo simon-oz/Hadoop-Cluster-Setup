@@ -86,13 +86,6 @@ $ sudo gedit hbase-site.xml
  */
 -->
 <configuration>
-<!--
-  <property>
-    <name>hbase.masters</name>
-    <value>node70,node71</value>
-    <description>List of master rpc end points for the hbase cluster.</description>
-  </property>
--->
   <property>
     <name>hbase.cluster.distributed</name>
     <value>true</value>
