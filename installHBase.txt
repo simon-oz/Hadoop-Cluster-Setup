@@ -1,0 +1,162 @@
+2020-03-29
+
+on slave node (edge node)
+1. download the bin package and verify the download 
+Download hbase 2.2.4 from https://www.apache.org/dyn/closer.lua/hbase/2.2.4/hbase-2.2.4-bin.tar.gz
+Download sha512: hbase-2.2.4-bin.tar.gz.sha512
+
+Verify:
+$ gpg --print-md SHA512 hbase-2.2.4-bin.tar.gz
+compare the output with signature
+$ cat hbase-2.2.4-bin.tar.gz.sha512
+
+The above two should be same
+
+2. check java path
+hdpusr@slave1:~$ which java
+/usr/bin/java
+
+3. unzip hbase tar ball and move it to /opt/bdgp/hbase
+hdpusr@slave1:~$ sudo mkdir /opt/bdgp/hbase
+hdpusr@slave1:~$ sudo cp -r Downloads/hbase-2.2.4-bin/hbase-2.2.4/* /opt/bdgp/hbase
+
+make hbase local dir for hbase on all six nodes
+
+$ mkdir hbaseLocal
+
+4. change configuration files
+
+4.1 change ./conf/hbase-env.sh
+$ sudo gedit hbase-env.sh
+
+set JAVA-HOME,
+
+exprot JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre
+
+
+##############################################################
+#
+# Node70 will be HMaster but not RegionServer
+#
+# Node71 will be back Master but not RegionServer
+#
+# The other four nodes will be acting as RegionServer
+# Zookeeper already running on node73, 74 and 75
+###############################################################
+
+4.2 change regionservers as following
+$ sudo gedit /opt/bdgp/hbase/conf/regionservers
+remove localhost, and add the following
+
+node72
+node73
+node74
+node75
+
+4.3 create backup master
+$ sudo touch /opt/bdgp/hbase/conf/backup-masters
+$ sudo gedit /opt/bdgp/hbase/conf/backup-masters
+add the following line
+node71
+
+
+4.4 change hbase-site.xml
+$ sudo gedit hbase-site.xml
+
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+/**
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<configuration>
+<!--
+  <property>
+    <name>hbase.masters</name>
+    <value>node70,node71</value>
+    <description>List of master rpc end points for the hbase cluster.</description>
+  </property>
+-->
+  <property>
+    <name>hbase.cluster.distributed</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>hbase.rootdir</name>
+    <value>hdfs://node70:9000/hbase</value>
+  </property>
+
+  <property>
+    <name>hbase.tmp.dir</name>
+    <value>/home/hdpusr/hbaseLocal</value>
+  </property>
+
+  <property>
+    <name>hbase.zookeeper.property.dataDir</name>
+    <value>/usr/zkDataDir</value>
+  </property>
+
+  <property>
+    <name>hbase.unsafe.stream.capability.enforce</name>
+    <value>false</value>
+    <description>
+      Controls whether HBase will check for stream capabilities (hflush/hsync).
+
+      Disable this if you intend to run on LocalFileSystem, denoted by a rootdir
+      with the 'file://' scheme, but be mindful of the NOTE below.
+
+      WARNING: Setting this to false blinds you to potential data loss and
+      inconsistent system state in the event of process and/or node failures. If
+      HBase is complaining of an inability to use hsync or hflush it's most
+      likely not a false positive.
+    </description>
+  </property>
+
+  <property>
+    <name>hbase.zookeeper.propeerty.clientPort</name>
+    <value>2181</value>
+  </property>
+
+  <property>
+    <name>hbase.zookeeper.quorum</name>
+    <value>node73,node74,node75</value>
+  </property>
+
+</configuration>
+5. Deploy HBASE
+
+Copy /opt/bdgp/hbase to Node70 to Node75
+slave1$ scp -r /opt/bdgp/hbase hdpusr@node70:/home/hdpusr
+$ ssh node70
+$ sudo mv hbase /opt/bdgp/
+
+do the same for all other nodes (node71 to node75)
+
+6. Start HBase
+$ ssh node70
+$ /opt/bdgp/hbase/bin/start-hbase.sh
+
+to stop hbase
+$ /opt/bdgp/hbase/bin/stop-hbase.sh
+
+
+
+
+
